@@ -3,7 +3,6 @@ package fi.dy.masa.itemscroller.mixin;
 import javax.annotation.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -30,13 +29,9 @@ import fi.dy.masa.malilib.render.RenderUtils;
 @Mixin(MerchantScreen.class)
 public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHandler>
 {
-    @Shadow private int selectedIndex;
-    @Accessor("indexStartOffset")
-    abstract void itemscroller_setIndexStartOffset(int indexStartOffsetLast);
-    @Accessor("indexStartOffset")
-    abstract int itemscroller_getIndexStartOffset();
-
     @Nullable private FavoriteData favoriteData;
+    @Shadow private int selectedIndex;
+    @Shadow int indexStartOffset;
     private int indexStartOffsetLast = -1;
 
     private MixinMerchantScreen(MerchantScreenHandler handler, PlayerInventory inventory, Text title)
@@ -54,7 +49,7 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
 
             if (data != null)
             {
-                itemscroller_setIndexStartOffset(data.getTradeListPosition());
+                this.indexStartOffset = data.getTradeListPosition();
             }
         }
     }
@@ -64,10 +59,10 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
     {
         if (Configs.Toggles.VILLAGER_TRADE_FEATURES.getBooleanValue() &&
             Configs.Generic.VILLAGER_TRADE_LIST_REMEMBER_SCROLL.getBooleanValue() &&
-            this.indexStartOffsetLast != itemscroller_getIndexStartOffset())
+            this.indexStartOffsetLast != this.indexStartOffset)
         {
-            VillagerDataStorage.getInstance().setTradeListPosition(itemscroller_getIndexStartOffset());
-            this.indexStartOffsetLast = itemscroller_getIndexStartOffset();
+            VillagerDataStorage.getInstance().setTradeListPosition(this.indexStartOffset);
+            this.indexStartOffsetLast = this.indexStartOffset;
         }
     }
 
@@ -76,10 +71,10 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
     {
         if (Configs.Toggles.VILLAGER_TRADE_FEATURES.getBooleanValue() &&
             Configs.Generic.VILLAGER_TRADE_LIST_REMEMBER_SCROLL.getBooleanValue() &&
-            this.indexStartOffsetLast != itemscroller_getIndexStartOffset())
+            this.indexStartOffsetLast != this.indexStartOffset)
         {
-            VillagerDataStorage.getInstance().setTradeListPosition(itemscroller_getIndexStartOffset());
-            this.indexStartOffsetLast = itemscroller_getIndexStartOffset();
+            VillagerDataStorage.getInstance().setTradeListPosition(this.indexStartOffset);
+            this.indexStartOffsetLast = this.indexStartOffset;
         }
     }
 
@@ -152,7 +147,7 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
 
             int numFavorites = favoriteData.favorites.size();
 
-            if (numFavorites > 0 && itemscroller_getIndexStartOffset() < numFavorites)
+            if (numFavorites > 0 && this.indexStartOffset < numFavorites)
             {
                 int screenX = (this.width - this.backgroundWidth) / 2;
                 int screenY = (this.height - this.backgroundHeight) / 2;
@@ -163,7 +158,7 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
                 float z = this.getZOffset() + 300;
                 IGuiIcon icon = favoriteData.isGlobal ? ItemScrollerIcons.STAR_5_PURPLE : ItemScrollerIcons.STAR_5_YELLOW;
 
-                for (int i = 0; i < (numFavorites - itemscroller_getIndexStartOffset()); ++i)
+                for (int i = 0; i < (numFavorites - this.indexStartOffset); ++i)
                 {
                     RenderUtils.bindTexture(icon.getTexture());
                     icon.renderAt(x, y, z, false, false);
@@ -185,7 +180,7 @@ public abstract class MixinMerchantScreen extends HandledScreen<MerchantScreenHa
         if (mouseX >= buttonsStartX && mouseX <= buttonsStartX + buttonWidth &&
             mouseY >= buttonsStartY && mouseY <= buttonsStartY + 7 * buttonHeight)
         {
-            return itemscroller_getIndexStartOffset() + (((int) mouseY - buttonsStartY) / buttonHeight);
+            return this.indexStartOffset + (((int) mouseY - buttonsStartY) / buttonHeight);
         }
 
         return -1;

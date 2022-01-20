@@ -77,14 +77,16 @@ public class InventoryUtils
 
                 if ((recipe.isIgnoredInRecipeBook() ||
                      world.getGameRules().getBoolean(GameRules.DO_LIMITED_CRAFTING) == false ||
-                     ((ClientPlayerEntity) player).getRecipeBook().contains(recipe))
-               )
-               {
-                   inventoryCraftResult.setLastRecipe(recipe);
-                   stack = recipe.craft(craftMatrix);
-               }
+                     ((ClientPlayerEntity) player).getRecipeBook().contains(recipe)))
+                {
+                    inventoryCraftResult.setLastRecipe(recipe);
+                    stack = recipe.craft(craftMatrix);
+                }
 
-               inventoryCraftResult.setStack(0, stack);
+                if (stack.isEmpty() == false)
+                {
+                    inventoryCraftResult.setStack(0, stack);
+                }
             }
         }
     }
@@ -1006,7 +1008,9 @@ public class InventoryUtils
         }
 
         // If moving to the other inventory, then move the hovered slot's stack last
-        if (toOtherInventory && shiftClickSlotWithCheck(gui, slot.id) == false)
+        if (toOtherInventory &&
+            shiftClickSlotWithCheck(gui, slot.id) == false &&
+            Configs.Toggles.SCROLL_STACKS_FALLBACK.getBooleanValue())
         {
             clickSlotsToMoveItemsFromSlot(slot, gui, toOtherInventory);
         }
